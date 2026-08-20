@@ -7,6 +7,7 @@ import com.company.devvault.auth.service.AuthService;
 import com.company.devvault.common.response.ApiResponse;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +24,12 @@ import java.time.Duration;
 public class AuthController {
 
     private final AuthService authService;
+
+    @Value("${devvault.cookie.same-site}")
+    private String cookieSameSite;
+
+    @Value("${devvault.cookie.secure}")
+    private boolean cookieSecure;
 
     public AuthController(AuthService authService) {
         this.authService = authService;
@@ -52,8 +59,8 @@ public class AuthController {
     private ResponseCookie buildCookie(String token, Duration maxAge) {
         return ResponseCookie.from(JwtCookieFilter.COOKIE_NAME, token)
                 .httpOnly(true)
-                .secure(false)
-                .sameSite("Lax")
+                .secure(cookieSecure)
+                .sameSite(cookieSameSite)
                 .path("/")
                 .maxAge(maxAge)
                 .build();
