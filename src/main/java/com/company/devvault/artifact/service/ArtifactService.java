@@ -181,6 +181,13 @@ public class ArtifactService {
     }
 
     @Transactional(readOnly = true)
+    public ArtifactResponse getArtifactBySlug(String slug) {
+        Artifact artifact = artifactRepository.findBySlug(slug)
+                .orElseThrow(() -> ApiException.notFound("Artifact " + slug + " not found"));
+        return toResponse(artifact);
+    }
+
+    @Transactional(readOnly = true)
     public Page<ArtifactResponse> listArtifacts(int page, int size, String sort, Long categoryId, Long ownerId) {
         Pageable pageable;
         if ("downloads".equalsIgnoreCase(sort)) {

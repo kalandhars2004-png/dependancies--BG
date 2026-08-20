@@ -23,6 +23,7 @@ public class ArtifactMapper {
                                        List<String> tags, List<String> maintainers, long versionCount) {
         ArtifactResponse dto = new ArtifactResponse();
         dto.setId(artifact.getId());
+        dto.setSlug(artifact.getSlug() != null ? artifact.getSlug() : artifact.getGroupId() + ":" + artifact.getArtifactId());
         dto.setGroupId(artifact.getGroupId());
         dto.setArtifactId(artifact.getArtifactId());
         dto.setName(artifact.getName());

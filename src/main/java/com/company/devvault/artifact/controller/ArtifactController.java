@@ -54,6 +54,11 @@ public class ArtifactController {
         return ApiResponse.success(artifactService.recentArtifacts(8));
     }
 
+    @GetMapping("/slug/{slug}")
+    public ApiResponse<ArtifactResponse> getBySlug(@PathVariable String slug) {
+        return ApiResponse.success(artifactService.getArtifactBySlug(slug));
+    }
+
     @GetMapping("/{id}")
     public ApiResponse<ArtifactResponse> get(@PathVariable Long id) {
         return ApiResponse.success(artifactService.getArtifact(id));

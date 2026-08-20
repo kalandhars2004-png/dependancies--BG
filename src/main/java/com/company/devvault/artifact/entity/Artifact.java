@@ -34,6 +34,9 @@ public class Artifact {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "slug", unique = true, length = 420)
+    private String slug;
+
     @Column(name = "group_id", nullable = false, length = 200)
     private String groupId;
 
@@ -93,10 +96,18 @@ public class Artifact {
     void onCreate() {
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();
+        ensureSlug();
     }
 
     @PreUpdate
     void onUpdate() {
         this.updatedAt = Instant.now();
+        ensureSlug();
+    }
+
+    private void ensureSlug() {
+        if (this.slug == null || this.slug.isBlank()) {
+            this.slug = this.groupId + ":" + this.artifactId;
+        }
     }
 }

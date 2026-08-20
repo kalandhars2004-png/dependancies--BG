@@ -15,6 +15,7 @@ import java.util.List;
 public class ArtifactResponse {
 
     private Long id;
+    private String slug;
     private String groupId;
     private String artifactId;
     private String name;

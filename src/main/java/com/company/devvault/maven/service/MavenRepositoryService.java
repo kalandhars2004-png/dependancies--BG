@@ -4,6 +4,7 @@ import com.company.devvault.analytics.entity.DownloadEvent;
 import com.company.devvault.analytics.repository.DownloadEventRepository;
 import com.company.devvault.artifact.entity.Artifact;
 import com.company.devvault.artifact.entity.ArtifactFile;
+import com.company.devvault.artifact.entity.ArtifactFileType;
 import com.company.devvault.artifact.entity.ArtifactSource;
 import com.company.devvault.artifact.entity.ArtifactVersion;
 import com.company.devvault.artifact.repository.ArtifactFileRepository;
@@ -217,6 +218,16 @@ public class MavenRepositoryService {
             throw ApiException.notFound("Artifact not found locally or on remote repository: "
                     + parsed.groupId + ":" + parsed.artifactId + ":" + parsed.version);
         }
+
+        if (isBackgroundPom(parsed)) {
+            if (parsed.checksumType != null) {
+                return checksumFromBytes(parsed, bytes);
+            }
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType("application/xml"))
+                    .body(bytes);
+        }
+
         ArtifactFile file = remoteProxy.importFile(parsed.groupId, parsed.artifactId, parsed.version,
                 baseName, parsed.fileType, bytes);
 
@@ -247,6 +258,44 @@ public class MavenRepositoryService {
             return fileName.substring(0, fileName.length() - 4);
         }
         return fileName;
+    }
+
+    /**
+     * Parent and BOM poms are pulled by Maven only to resolve the dependency
+     * graph (imports, parents). They are served through the proxy but are not
+     * registered as artifacts, so the registry only shows artifacts that were
+     * actually added or consumed, not the entire transitive pom tree.
+     */
+    private boolean isBackgroundPom(MavenPathParser.ParsedPath parsed) {
+        if (parsed.fileType != ArtifactFileType.POM) {
+            return false;
+        }
+        String artifactId = parsed.artifactId.toLowerCase();
+        return artifactId.endsWith("-parent") || artifactId.endsWith("-bom");
+    }
+
+    private ResponseEntity<String> checksumFromBytes(MavenPathParser.ParsedPath parsed, byte[] bytes) {
+        String checksum;
+        try (InputStream input = new ByteArrayInputStream(bytes)) {
+            switch (parsed.checksumType) {
+                case "SHA1":
+                    checksum = ChecksumUtil.sha1(input);
+                    break;
+                case "SHA256":
+                    checksum = ChecksumUtil.sha256(input);
+                    break;
+                case "MD5":
+                    checksum = ChecksumUtil.md5(input);
+                    break;
+                default:
+                    throw ApiException.notFound("Unsupported checksum type: " + parsed.checksumType);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to read artifact for checksum", e);
+        }
+        return ResponseEntity.ok()
+                .contentType(MediaType.TEXT_PLAIN)
+                .body(checksum);
     }
 
     private ResponseEntity<String> resolveMetadata(MavenPathParser.ParsedPath parsed) {

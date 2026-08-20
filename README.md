@@ -13,7 +13,7 @@ A Spring Boot 3 REST API that lets teams publish, discover, and consume internal
 | Language   | Java 17                                     |
 | Framework  | Spring Boot 3.2.5 (Spring Web, Data JPA, Security, Validation) |
 | Build      | Maven 3.8+                                  |
-| Database   | MySQL 8 (`devvault`, `ddl-auto=update`)     |
+| Database   | Supabase PostgreSQL 15 (`postgres` database, `public` schema) |
 | Auth       | JWT stored in an httpOnly cookie (`devvault_token`) |
 | Storage    | Local filesystem (`./storage`, Maven layout) |
 | Docs/UI    | Next.js 14 frontend                             |
@@ -32,7 +32,7 @@ A Spring Boot 3 REST API that lets teams publish, discover, and consume internal
 ## Getting Started
 
 ```bash
-# 1. Start MySQL and make sure it is reachable on localhost:3306
+# 1. Make sure the Supabase database is reachable (see Connection settings below)
 
 # 2. Run the backend (from this folder)
 mvn spring-boot:run
@@ -47,15 +47,28 @@ The API is served at `http://localhost:8080`.
 
 ---
 
-## Configuration
+## Connection settings (Supabase)
 
-All settings live in `src/main/resources/application.properties` and can be overridden with environment variables.
+The backend connects to Supabase PostgreSQL by default. In the Supabase dashboard (Project Settings → Database → Connection string), use the **JDBC URI**:
+
+```
+jdbc:postgresql://db.mtomyylcallpljhpgkrf.supabase.co:5432/postgres?sslmode=require&user=postgres&password=<your-password>
+```
+
+Set these environment variables to point the backend at a different Supabase project / credentials:
+
+| Env var | Example |
+| ------- | ------- |
+| `DB_URL` | `jdbc:postgresql://db.xxxx.supabase.co:5432/postgres?sslmode=require` |
+| `DB_USERNAME` | `postgres` |
+| `DB_PASSWORD` | your database password |
+
+Tables are created automatically on startup (`ddl-auto=update`).
 
 | Property | Env var | Default | Description |
 | -------- | ------- | ------- | ----------- |
-| `spring.datasource.url` | `DB_URL` | `jdbc:mysql://localhost:3306/devvault?...` | MySQL connection |
-| `spring.datasource.username` | — | `root` | DB user |
-| `spring.datasource.password` | — | `root` | DB password |
+| `spring.datasource.username` | `DB_USERNAME` | `postgres` | DB user |
+| `spring.datasource.password` | `DB_PASSWORD` | `Kalandhar@123` | DB password |
 | `server.port` | `SERVER_PORT` | `8080` | API port |
 | `devvault.storage.location` | `STORAGE_LOCATION` | `./storage` | Where JARs/POMs are stored on disk |
 | `devvault.jwt.secret` | `JWT_SECRET` | devvault-... | JWT signing key |

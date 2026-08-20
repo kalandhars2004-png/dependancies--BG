@@ -14,6 +14,8 @@ public interface ArtifactRepository extends JpaRepository<Artifact, Long> {
 
     Optional<Artifact> findByGroupIdAndArtifactId(String groupId, String artifactId);
 
+    Optional<Artifact> findBySlug(String slug);
+
     boolean existsByGroupIdAndArtifactId(String groupId, String artifactId);
 
     Page<Artifact> findAllByOrderByCreatedAtDesc(Pageable pageable);

@@ -67,9 +67,21 @@ public class DataSeeder implements CommandLineRunner {
         this.storageService = storageService;
     }
 
+    private void backfillSlugs() {
+        List<Artifact> missing = artifactRepository.findAll().stream()
+                .filter(a -> a.getSlug() == null || a.getSlug().isBlank())
+                .toList();
+        if (!missing.isEmpty()) {
+            log.info("Backfilling slugs for {} artifact(s)", missing.size());
+            missing.forEach(a -> a.setSlug(a.getGroupId() + ":" + a.getArtifactId()));
+            artifactRepository.saveAll(missing);
+        }
+    }
+
     @Override
     @Transactional
     public void run(String... args) {
+        backfillSlugs();
         if (userRepository.count() > 0) {
             log.info("Data seeding skipped - users already exist");
             return;

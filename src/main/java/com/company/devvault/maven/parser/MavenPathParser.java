@@ -14,7 +14,7 @@ public class MavenPathParser {
     public enum Mode {
         ARTIFACT_FILE,
         ARTIFACT_METADATA,
-        VERSION_METADATA
+            VERSION_METADATA
     }
 
     public static final class ParsedPath {
