@@ -1,0 +1,7 @@
+package com.company.devvault.audit.repository;
+
+import com.company.devvault.audit.entity.AuditLog;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface AuditLogRepository extends JpaRepository<AuditLog, Long> {
+}
