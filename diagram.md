@@ -47,7 +47,7 @@
 └───────────────┼───────────────────────────────────────────────────────────┘
                 ▼
    ┌──────────────────────────────┐
-   │   DATABASE (MySQL/Supabase)  │
+   │   DATABASE (Supabase PostgreSQL) │
    │   artifacts · versions ·     │
    │   files · users · downloads  │
    │   audit_logs · events        │
@@ -101,7 +101,7 @@
 │            (versions list Maven asks for during resolution)              │
 │                                                                          │
 │   ArtifactStorageService:  storage/<group>/<artifact>/<version>/<file>   │
-│   JPA Repositories ──▶  DB (MySQL/Supabase)                              │
+│   JPA Repositories ──▶  DB (Supabase PostgreSQL)                          │
 └──────────────────────────────────────────────────────────────────────────┘
 ```
 

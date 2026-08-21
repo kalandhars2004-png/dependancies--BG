@@ -24,8 +24,8 @@ A Spring Boot 3 REST API that lets teams publish, discover, and consume internal
 
 - JDK 17
 - Maven 3.8+
-- MySQL 8 running locally with a `devvault` database (created automatically via `createDatabaseIfNotExist`)
-- Default credentials: `root` / `root`
+- A PostgreSQL database (Supabase or another PostgreSQL provider)
+- Environment variables configured: `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`
 
 ---
 
@@ -55,11 +55,11 @@ The backend connects to Supabase PostgreSQL by default. In the Supabase dashboar
 jdbc:postgresql://db.mtomyylcallpljhpgkrf.supabase.co:5432/postgres?sslmode=require&user=postgres&password=<your-password>
 ```
 
-Set these environment variables to point the backend at a different Supabase project / credentials:
+Set these environment variables to point the backend at the correct Supabase project / credentials:
 
 | Env var | Example |
 | ------- | ------- |
-| `DB_URL` | `jdbc:postgresql://db.xxxx.supabase.co:5432/postgres?sslmode=require` |
+| `DB_URL` | `jdbc:postgresql://db.<project-ref>.supabase.co:5432/postgres?sslmode=require` |
 | `DB_USERNAME` | `postgres` |
 | `DB_PASSWORD` | your database password |
 
@@ -67,8 +67,8 @@ Tables are created automatically on startup (`ddl-auto=update`).
 
 | Property | Env var | Default | Description |
 | -------- | ------- | ------- | ----------- |
-| `spring.datasource.username` | `DB_USERNAME` | `postgres` | DB user |
-| `spring.datasource.password` | `DB_PASSWORD` | `Kalandhar@123` | DB password |
+| `spring.datasource.username` | `DB_USERNAME` | required | DB user |
+| `spring.datasource.password` | `DB_PASSWORD` | required | DB password |
 | `server.port` | `SERVER_PORT` | `8080` | API port |
 | `devvault.storage.location` | `STORAGE_LOCATION` | `./storage` | Where JARs/POMs are stored on disk |
 | `devvault.jwt.secret` | `JWT_SECRET` | devvault-... | JWT signing key |
@@ -216,7 +216,7 @@ to the project `pom.xml` and credentials to `~/.m2/settings.xml`, then run `mvn 
 What happens on each PUT:
 
 - `maven-metadata.xml` and checksum uploads are acknowledged and ignored (DevVault generates its own).
-- Jars/poms are stored under `./storage` and registered in MySQL as INTERNAL artifacts.
+- Jars/poms are stored under `./storage` and registered in the database as INTERNAL artifacts.
 - Versions are immutable — re-deploying the same `groupId:artifactId:version` returns 409.
 - With Basic auth, the artifact is attributed to that account; otherwise it is attributed to the
   auto-created `maven-deploy@devvault.local` system user (like the anonymous web publish flow).
@@ -231,7 +231,7 @@ serves it — so **any Maven dependency works out of the box**.
 
 1. A request for a missing file hits `/repository/maven/...`.
 2. `RemoteMavenProxyService` downloads it from `devvault.remote.url`.
-3. The artifact, version, and file rows are persisted in MySQL and the bytes are written
+3. The artifact, version, and file rows are persisted in the database and the bytes are written
    to the storage folder (`./storage/<group>/<artifact>/<version>/...`).
 4. The artifact appears in the web UI with a **Proxied from Maven Central** badge.
 
@@ -256,7 +256,7 @@ in a Maven-compatible layout:
                     └── hello-app-1.0.0.pom
 ```
 
-Metadata (name, version, size, SHA-256, file type, storage path) is tracked in MySQL
+Metadata (name, version, size, SHA-256, file type, storage path) is tracked in PostgreSQL
 (`artifacts`, `artifact_versions`, `artifact_files`, `download_events`).
 
 ---
