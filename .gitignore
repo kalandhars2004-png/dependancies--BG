@@ -1,7 +1,8 @@
-target/
+target/*
+!target/*.jar
+
 /storage/
 *.class
-*.jar
 .idea/
 *.iml
 .vscode/
